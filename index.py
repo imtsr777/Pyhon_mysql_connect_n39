@@ -39,19 +39,15 @@ class StudentDetailWindow(QWidget):
 
 class Window(QWidget):
     page = 1
-    page_size = 10
+    page_size = 3
     def __init__(self):
         super().__init__()
         self.studentRepo = Students()
 
+
+
         self.vLayout = QVBoxLayout(self)
         self.qLstW = QListWidget(self)
-
-        self.qLstW.addItem("Salom")
-        self.qLstW.addItem("Salom")
-        self.qLstW.addItem("Salom")
-        self.qLstW.addItem("Salom")
-        self.qLstW.addItem("Salom")
 
         self.vLayout.addWidget(self.qLstW)
 
@@ -68,17 +64,37 @@ class Window(QWidget):
 
         self.setLayout(self.vLayout)
 
-        self.setUsersToListWidget()
         self.btnNext.clicked.connect(self.getNextStudents)
         self.btnPrev.clicked.connect(self.getPrevStudents)
         self.qLstW.itemClicked.connect(self.showStudentDetail)
+
+        self.mainQhLay = QHBoxLayout(self)
+        self.searchLineEdit = QLineEdit(self)
+        self.courseCombo = QComboBox(self)
+        self.mainQhLay.addWidget(self.searchLineEdit)
+        self.mainQhLay.addWidget(self.courseCombo)
+        
+        self.vLayout.addLayout(self.mainQhLay)
+
+        self.setUsersToListWidget()
+        self.courseCombo.addItems(["all","1", "2", "3", "4"])
+
+        self.searchLineEdit.textChanged.connect(self.setUsersToListWidget)
+        self.courseCombo.activated.connect(self.setUsersToListWidget)
 
 
 
     def setUsersToListWidget(self):
         self.qLstW.clear()
+        search = ""
+        course = 0
+        if( self.searchLineEdit.text() ):
+            search = self.searchLineEdit.text()
+        
+        if(self.courseCombo.currentText() and self.courseCombo.currentText() != "all" ):
+            course = int(self.courseCombo.currentText())
 
-        for item in self.studentRepo.getStudentsList(page=self.page, size=self.page_size):
+        for item in self.studentRepo.getStudentsList(page=self.page, size=self.page_size, search = search, course = course):
             newItem = QListWidgetItem(item.firstName + " " + item.lastName)
             newItem.studentId = item.id
             self.qLstW.addItem(newItem)
@@ -97,7 +113,7 @@ class Window(QWidget):
 
     def showStudentDetail(self):
         # print(self.qLstW.currentItem().studentId)
-        self.detailWindow = StudentDetailWindow(self.qLstW.currentItem().studentId)
+        self.detailWindow = StudentDetailWindow(self.qLstW.currentItem().studentId )
         self.detailWindow.show()
 
 
